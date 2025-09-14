@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @DataJpaTest
@@ -58,16 +60,33 @@ class MenuItemRepositoryImplTest {
     @Test
     void updateMenu_updatesMenu_whenSomeUpdateFieldsAreSet() {
         // TODO
+        var original = menuItemRepository.findByName("Cappuchino").get(0);
+        var dto = TestData.updateMenuPartedRequest();
+        var id = original.getId();
+        int updateCount = menuItemRepository.updateMenu(id, dto);
+        assertThat(updateCount).isEqualTo(1);
+        MenuItem updated = menuItemRepository.findById(id).get();
+        assertFieldsEquality(updated, original, "description", "price", "imageUrl");
+        assertFieldsEquality(updated, dto, "name", "timeToCook");
     }
 
     @Test
     void updateMenu_throws_whenUpdateRequestHasNotUniqueName() {
         // TODO
+        var dto = TestData.updateMenuNotUniqueNameRequest();
+        var id = getIdByName("Cappuchino");
+        assertThatThrownBy(() -> {
+            menuItemRepository.updateMenu(id, dto);
+            em.flush(); // без этого может не упасть в тесте
+        }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void updateMenu_updatesNothing_whenNoMenuPresentInDB() {
         // TODO
+        long id = -1L;
+        int updateCount = menuItemRepository.updateMenu(id, TestData.updateMenuFullRequest());
+        assertThat(updateCount).isEqualTo(0);
     }
 
     @Test
@@ -80,26 +99,41 @@ class MenuItemRepositoryImplTest {
     @Test
     void getMenusFor_returnsCorrectListForDRINKS_sortedByPriceDesc() {
         // TODO
+        var drinks = menuItemRepository.getMenusFor(Category.DRINKS, SortBy.PRICE_DESC);
+        assertThat(drinks).hasSize(3);
+        assertElementsInOrder(drinks, MenuItem::getName, List.of("Tea", "Wine", "Cappuccino"));
     }
 
     @Test
     void getMenusFor_returnsCorrectListForDRINKS_sortedByNameAsc() {
         // TODO
+        var drinks = menuItemRepository.getMenusFor(Category.DRINKS, SortBy.AZ);
+        assertThat(drinks).hasSize(3);
+        assertElementsInOrder(drinks, MenuItem::getName, List.of("Cappuccino", "Tea", "Wine"));
     }
 
     @Test
     void getMenusFor_returnsCorrectListForDRINKS_sortedByNameDesc() {
         // TODO
+        var drinks = menuItemRepository.getMenusFor(Category.DRINKS, SortBy.ZA);
+        assertThat(drinks).hasSize(3);
+        assertElementsInOrder(drinks, MenuItem::getName, List.of("Wine", "Tea", "Cappuccino"));
     }
 
     @Test
     void getMenusFor_returnsCorrectListForDRINKS_sortedByDateAsc() {
         // TODO
+        var drinks = menuItemRepository.getMenusFor(Category.DRINKS, SortBy.DATE_ASC);
+        assertThat(drinks).hasSize(3);
+        assertElementsInOrder(drinks, MenuItem::getName, List.of("Cappuccino", "Tea", "Wine"));
     }
 
     @Test
     void getMenusFor_returnsCorrectListForDRINKS_sortedByDateDesc() {
         // TODO
+        var drinks = menuItemRepository.getMenusFor(Category.DRINKS, SortBy.DATE_DESC);
+        assertThat(drinks).hasSize(3);
+        assertElementsInOrder(drinks, MenuItem::getName, List.of("Wine", "Tea", "Cappuccino"));
     }
 
     private Long getIdByName(String name) {
