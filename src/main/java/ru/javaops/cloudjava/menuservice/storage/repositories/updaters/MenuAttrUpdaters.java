@@ -2,6 +2,8 @@ package ru.javaops.cloudjava.menuservice.storage.repositories.updaters;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.javaops.cloudjava.menuservice.dto.UpdateMenuRequest;
+import ru.javaops.cloudjava.menuservice.storage.model.MenuItem_;
 
 import java.math.BigDecimal;
 
@@ -9,26 +11,26 @@ import java.math.BigDecimal;
 public class MenuAttrUpdaters {
     @Bean
     MenuAttrUpdater<String> description() {
-        return null;
+        return new MenuAttrUpdater<>(UpdateMenuRequest::getDescription, MenuItem_.description);
     }
 
     @Bean
     MenuAttrUpdater<String> imageUrl() {
-        return null;
+        return new MenuAttrUpdater<>(UpdateMenuRequest::getImageUrl, MenuItem_.imageUrl);
     }
 
     @Bean
     MenuAttrUpdater<String> name() {
-        return null;
+        return new MenuAttrUpdater<>(UpdateMenuRequest::getName, MenuItem_.name);
     }
 
     @Bean
     MenuAttrUpdater<BigDecimal> price() {
-        return null;
+        return new MenuAttrUpdater<>(UpdateMenuRequest::getPrice, MenuItem_.price);
     }
 
     @Bean
     MenuAttrUpdater<Long> timeToCook() {
-        return null;
+        return new MenuAttrUpdater<>(UpdateMenuRequest::getTimeToCook, MenuItem_.timeToCook);
     }
 }

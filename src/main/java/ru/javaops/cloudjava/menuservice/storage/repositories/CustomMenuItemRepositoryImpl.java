@@ -2,6 +2,7 @@ package ru.javaops.cloudjava.menuservice.storage.repositories;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
@@ -14,6 +15,9 @@ import ru.javaops.cloudjava.menuservice.storage.model.MenuItem_;
 import ru.javaops.cloudjava.menuservice.storage.repositories.updaters.MenuAttrUpdater;
 
 import java.util.List;
+
+import static ru.javaops.cloudjava.menuservice.storage.model.MenuItem_.NAME;
+import static ru.javaops.cloudjava.menuservice.storage.model.MenuItem_.PRICE;
 
 @Repository
 public class CustomMenuItemRepositoryImpl implements CustomMenuItemRepository {
@@ -40,6 +44,18 @@ public class CustomMenuItemRepositoryImpl implements CustomMenuItemRepository {
     @Override
     public List<MenuItem> getMenusFor(Category category, SortBy sortBy) {
         // TODO
-        return null;
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<MenuItem> cq = cb.createQuery(MenuItem.class);
+        Root<MenuItem> root = cq.from(MenuItem.class);
+
+        // Фильтр по категории
+        cq.where(cb.equal(root.get(MenuItem_.category), category));
+
+        // Сортировка через SortBy
+        if (sortBy != null) {
+            cq.orderBy(sortBy.getOrder(cb, root));
+        }
+
+        return em.createQuery(cq).getResultList();
     }
 }
