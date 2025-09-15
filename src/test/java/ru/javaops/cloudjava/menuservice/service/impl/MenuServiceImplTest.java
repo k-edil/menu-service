@@ -96,9 +96,9 @@ public class MenuServiceImplTest extends BaseTest {
 
     @Test
     void updateMenuItem_throws_whenRequestHasNotUniqueName(){
-        var dto = TestData.updateMenuFullRequest();
         Long id = getIdByName("Cappuccino");
-        menuService.updateMenuItem(id, dto);
+        var dto = TestData.updateMenuFullRequest();
+        dto.setName("Wine");
         assertThrows(MenuServiceException.class,
                 () -> menuService.updateMenuItem(id, dto));
     }
