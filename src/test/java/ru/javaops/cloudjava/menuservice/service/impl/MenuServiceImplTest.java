@@ -10,11 +10,13 @@ import ru.javaops.cloudjava.menuservice.service.MenuService;
 import ru.javaops.cloudjava.menuservice.storage.model.Category;
 import ru.javaops.cloudjava.menuservice.storage.repositories.MenuItemRepository;
 import ru.javaops.cloudjava.menuservice.testutils.TestData;
+import ru.javaops.cloudjava.menuservice.exception.MenuServiceException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.Assert.assertThrows;
 
 @SpringBootTest
 public class MenuServiceImplTest extends BaseTest {
@@ -43,5 +45,61 @@ public class MenuServiceImplTest extends BaseTest {
         assertFieldsEquality(result, dto, "name", "description", "price", "imageUrl", "timeToCook");
         assertThat(result.getCreatedAt()).isAfter(now);
         assertThat(result.getUpdatedAt()).isAfter(now);
+    }
+
+
+    @Test
+    void getMenu_returnsMenu_whenMenuFound() {
+        Long id = getIdByName("Cappuccino");
+        MenuItemDto dto = menuService.getMenu(id);
+        assertThat(dto).isNotNull();
+    }
+
+    @Test
+    void getMenu_returnsException_whenMenuNotFound() {
+        Long id = 1000L;
+        assertThrows(MenuServiceException.class,
+                () -> menuService.getMenu(id));
+    }
+
+    @Test
+    void deleteMenu_deletesMenu_whenMenuFound() {
+        Long id = getIdByName("Cappuccino");
+        assertThat(repository.findById(id)).isPresent();
+        menuService.deleteMenuItem(id);
+        assertThat(repository.findById(id)).isNotPresent();
+    }
+
+    @Test
+    void createMenuItem_throws_whenRequestHasNotUniqueName() {
+        var dto = TestData.createMenuRequest();
+        menuService.createMenuItem(dto);
+        assertThrows(MenuServiceException.class,
+                () -> menuService.createMenuItem(dto));
+    }
+
+    @Test
+    void updateMenuItem_updatesMenu_whenAllUpdateFieldsAreSet(){
+        var dto = TestData.updateMenuFullRequest();
+        Long id = getIdByName("Cappuccino");
+        menuService.updateMenuItem(id, dto);
+        MenuItemDto updated = menuService.getMenu(id);
+        assertFieldsEquality(updated, dto, "name", "description", "price", "imageUrl", "timeToCook");
+    }
+
+    @Test
+    void updateMenuItem_throws_whenMenuNotFound(){
+        Long id = 1000L;
+        assertThrows(MenuServiceException.class,
+                () -> menuService.updateMenuItem(id, TestData.updateMenuFullRequest()));
+    }
+
+    @Test
+    void updateMenuItem_throws_whenRequestHasNotUniqueName(){
+        var dto = TestData.updateMenuFullRequest();
+        Long id = getIdByName("Cappuccino");
+        menuService.updateMenuItem(id, dto);
+        assertThrows(MenuServiceException.class,
+                () -> menuService.updateMenuItem(id, dto));
     }
 }
