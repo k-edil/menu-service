@@ -33,19 +33,15 @@ public class TestData {
 
     public static UpdateMenuRequest updateMenuPartedRequest() {
         return UpdateMenuRequest.builder()
-                .name("New Cappuccino")
-                .price(null)
                 .timeToCook(2100L)
-                .description(null)
-                .imageUrl(null)
+                .description("New Cappuccino Description")
                 .build();
     }
 
     public static UpdateMenuRequest updateMenuNotUniqueNameRequest() {
         return UpdateMenuRequest.builder()
-                .name(ITALIAN_SALAD_NAME)
+                .name("Wine")
                 .price(BigDecimal.valueOf(100.01))
-                .timeToCook(2000L)
                 .description("New Cappuccino Description")
                 .imageUrl("http://images.com/new_cappuccino.png")
                 .build();

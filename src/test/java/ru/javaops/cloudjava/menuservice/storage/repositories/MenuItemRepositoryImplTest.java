@@ -60,21 +60,21 @@ class MenuItemRepositoryImplTest {
     @Test
     void updateMenu_updatesMenu_whenSomeUpdateFieldsAreSet() {
         // TODO
-        var original = menuItemRepository.findByName("Cappuchino").get(0);
+        var original = menuItemRepository.findByName("Cappuccino").get(0);
         var dto = TestData.updateMenuPartedRequest();
         var id = original.getId();
         int updateCount = menuItemRepository.updateMenu(id, dto);
         assertThat(updateCount).isEqualTo(1);
         MenuItem updated = menuItemRepository.findById(id).get();
-        assertFieldsEquality(updated, original, "description", "price", "imageUrl");
-        assertFieldsEquality(updated, dto, "name", "timeToCook");
+        assertFieldsEquality(updated, dto, "description", "timeToCook");
+        assertFieldsEquality(updated, original, "name", "price", "imageUrl");
     }
 
     @Test
     void updateMenu_throws_whenUpdateRequestHasNotUniqueName() {
         // TODO
         var dto = TestData.updateMenuNotUniqueNameRequest();
-        var id = getIdByName("Cappuchino");
+        var id = getIdByName("Cappuccino");
         assertThatThrownBy(() -> {
             menuItemRepository.updateMenu(id, dto);
             em.flush(); // без этого может не упасть в тесте
@@ -125,7 +125,7 @@ class MenuItemRepositoryImplTest {
         // TODO
         var drinks = menuItemRepository.getMenusFor(Category.DRINKS, SortBy.DATE_ASC);
         assertThat(drinks).hasSize(3);
-        assertElementsInOrder(drinks, MenuItem::getName, List.of("Cappuccino", "Tea", "Wine"));
+        assertElementsInOrder(drinks, MenuItem::getName, List.of("Cappuccino", "Wine", "Tea"));
     }
 
     @Test
@@ -133,7 +133,7 @@ class MenuItemRepositoryImplTest {
         // TODO
         var drinks = menuItemRepository.getMenusFor(Category.DRINKS, SortBy.DATE_DESC);
         assertThat(drinks).hasSize(3);
-        assertElementsInOrder(drinks, MenuItem::getName, List.of("Wine", "Tea", "Cappuccino"));
+        assertElementsInOrder(drinks, MenuItem::getName, List.of("Tea", "Wine", "Cappuccino"));
     }
 
     private Long getIdByName(String name) {
